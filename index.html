@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAP | Personal Training System</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-family-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas & jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            gold: '#D4AF37',
+                            goldLight: '#F3E5AB',
+                            dark: '#0A0A0C',
+                            card: '#121216',
+                            cardHover: '#1A1A20',
+                            border: '#2A2A35',
+                            red: '#E53E3E',
+                            green: '#38A169'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Tajawal', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #0A0A0C;
+            color: #E2E8F0;
+            font-family: 'Tajawal', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .gold-gradient-text {
+            background: linear-gradient(135deg, #FFF 0%, #D4AF37 50%, #AA7C11 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gold-border-glow {
+            box-shadow: 0 0 15px rgba(212, 175, 55, 0.15);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0A0A0C;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #2A2A35;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #D4AF37;
+        }
+
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: #0A0A0C !important;
+                color: #E2E8F0 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            #capture-area {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between custom-scrollbar pb-10">
+
+    <!-- Header / Navbar -->
+    <header class="border-b border-brand-border bg-brand-card/50 backdrop-blur-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-gold to-yellow-600 flex items-center justify-center text-brand-dark font-black text-xl shadow-lg shadow-brand-gold/20">
+                    C
+                </div>
+                <div>
+                    <h1 class="text-xl font-black tracking-wide gold-gradient-text">CAP SYSTEM</h1>
+                    <p class="text-xs text-gray-400">Personal Training System</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <button onclick="exportAsPDF()" class="bg-brand-gold hover:bg-yellow-500 text-brand-dark font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2 shadow-lg shadow-brand-gold/10">
+                    <i class="fa-solid fa-file-pdf"></i>
+                    <span class="hidden sm:inline">تصدير PDF</span>
+                </button>
+                <button onclick="exportAsImage()" class="bg-brand-cardHover border border-brand-border hover:border-brand-gold text-white font-bold px-4 py-2 rounded-xl text-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-image text-brand-gold"></i>
+                    <span class="hidden sm:inline">حفظ كصورة</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 py-8 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Controls & Input Panel -->
+        <section class="lg:col-span-4 space-y-6 no-print">
+            <!-- Client Info Card -->
+            <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                <h2 class="text-lg font-bold text-brand-gold flex items-center gap-2 border-b border-brand-border/60 pb-3">
+                    <i class="fa-solid fa-user-gear"></i> بيانات المتدرب
+                </h2>
+                <div class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">اسم المتدرب</label>
+                        <input type="text" id="input-client-name" value="محمد أحمد" oninput="updateClientData()" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">اسم المدرب</label>
+                            <input type="text" id="input-trainer-name" value="الكابتن أحمد" oninput="updateClientData()" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">التاريخ</label>
+                            <input type="date" id="input-date" onchange="updateClientData()" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">الهدف التدريبي</label>
+                        <input type="text" id="input-goal" value="تضخيم عضلات + تحسين اللياقة" oninput="updateClientData()" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Workout Card -->
+            <div class="bg-brand-card border border-brand-border rounded-2xl p-5 space-y-4">
+                <h2 class="text-lg font-bold text-brand-gold flex items-center gap-2 border-b border-brand-border/60 pb-3">
+                    <i class="fa-solid fa-dumbbell"></i> إضافة تمرين جديد
+                </h2>
+                <form id="add-workout-form" onsubmit="handleAddWorkout(event)" class="space-y-3">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">اسم التمرين</label>
+                        <input type="text" id="workout-name" placeholder="مثال: بنش مستوي بار" required class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">المجموعات</label>
+                            <input type="number" id="workout-sets" min="1" value="4" required class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white text-center">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">التكرارات</label>
+                            <input type="text" id="workout-reps" value="10-12" required class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white text-center">
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-400 mb-1 block">الراحة (ث)</label>
+                            <input type="number" id="workout-rest" min="0" step="5" value="60" required class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white text-center">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block">ملاحظات التمرين</label>
+                        <input type="text" id="workout-notes" placeholder="مثال: التركيز على الحركة السلبية" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-brand-gold transition text-white">
+                    </div>
+                    <button type="submit" class="w-full bg-brand-gold/10 hover:bg-brand-gold text-brand-gold hover:text-brand-dark border border-brand-gold/30 font-bold py-2.5 rounded-xl text-sm transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-plus"></i> إضافة إلى البرنامج
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Preview & Printable Area -->
+        <section class="lg:col-span-8 flex justify-center">
+            <div id="capture-area" class="w-full max-w-3xl bg-brand-card border border-brand-border rounded-3xl p-6 sm:p-8 space-y-6 shadow-2xl relative overflow-hidden">
+                
+                <!-- Background Decorative Element -->
+                <div class="absolute -top-24 -left-24 w-60 h-60 bg-brand-gold/5 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Header Document -->
+                <div class="flex flex-wrap items-center justify-between border-b border-brand-border pb-6 gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-gold to-yellow-600 flex items-center justify-center text-brand-dark font-black text-2xl shadow-xl shadow-brand-gold/20">
+                            CAP
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-black text-white tracking-wide">جدول التمرين الأسبوعي</h2>
+                            <p class="text-xs text-brand-gold font-medium">CAP PERSONAL TRAINING SYSTEM</p>
+                        </div>
+                    </div>
+                    <div class="text-left bg-brand-dark/50 border border-brand-border/50 px-4 py-2 rounded-2xl text-xs space-y-1">
+                        <div><span class="text-gray-400">التاريخ: </span><span id="display-date" class="text-white font-bold">--/--/----</span></div>
+                        <div><span class="text-gray-400">المدرب: </span><span id="display-trainer" class="text-brand-gold font-bold">الكابتن أحمد</span></div>
+                    </div>
+                </div>
+
+                <!-- Client Info Bar -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-brand-dark/80 border border-brand-border rounded-2xl p-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-border/50 flex items-center justify-center text-brand-gold">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">اسم المتدرب</p>
+                            <p id="display-client-name" class="font-bold text-white text-base">محمد أحمد</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-brand-border/50 flex items-center justify-center text-brand-gold">
+                            <i class="fa-solid fa-bullseye"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-400">الهدف</p>
+                            <p id="display-goal" class="font-bold text-white text-base">تضخيم عضلات + تحسين اللياقة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workouts List -->
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                            <i class="fa-solid fa-list-check text-brand-gold"></i> التمارين المحددة
+                        </h3>
+                        <span id="workout-count" class="text-xs bg-brand-gold/10 border border-brand-gold/20 text-brand-gold px-2.5 py-1 rounded-full font-bold">0 تمارين</span>
+                    </div>
+
+                    <div id="workouts-list" class="space-y-3 min-h-[180px]">
+                        <!-- Dynamic Workouts Will Render Here -->
+                    </div>
+                </div>
+
+                <!-- Footer Document -->
+                <div class="border-t border-brand-border pt-4 flex items-center justify-between text-xs text-gray-500">
+                    <p>© CAP Personal Training System - جميع الحقوق محفوظة</p>
+                    <p class="flex items-center gap-1"><i class="fa-solid fa-shield-halved text-brand-gold"></i> معتمد من قبل CAP</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Set Default Date to Today
+        document.getElementById('input-date').valueAsDate = new Date();
+
+        // Initial Program Workouts
+        let workouts = [
+            { id: 1, name: 'بنش مستوي بالبار (Barbell Bench Press)', sets: 4, reps: '8-10', rest: 90, notes: 'التركيز على الوزن والنزول البطء' },
+            { id: 2, name: 'تجميع إنكلاين بالدمبل (Incline Dumbbell Press)', sets: 3, reps: '10-12', rest: 60, notes: 'التركيز على العضلة العلوية للصدر' },
+            { id: 3, name: 'متوازي للصدر (Dips for Chest)', sets: 3, reps: 'حتى الفشل', rest: 60, notes: 'الانحناء للأمام لتشغيل الصدر' }
+        ];
+
+        // Update Client Data Display
+        function updateClientData() {
+            document.getElementById('display-client-name').innerText = document.getElementById('input-client-name').value || '---';
+            document.getElementById('display-trainer').innerText = document.getElementById('input-trainer-name').value || '---';
+            document.getElementById('display-goal').innerText = document.getElementById('input-goal').value || '---';
+            
+            const rawDate = document.getElementById('input-date').value;
+            if (rawDate) {
+                const dateObj = new Date(rawDate);
+                document.getElementById('display-date').innerText = dateObj.toLocaleDateString('ar-EG');
+            } else {
+                document.getElementById('display-date').innerText = '--/--/----';
+            }
+        }
+
+        // Render Workouts List
+        function renderWorkouts() {
+            const container = document.getElementById('workouts-list');
+            const countBadge = document.getElementById('workout-count');
+            
+            countBadge.innerText = `${workouts.length} تمارين`;
+
+            if (workouts.length === 0) {
+                container.innerHTML = `
+                    <div class="border border-dashed border-brand-border rounded-2xl p-8 text-center text-gray-500 space-y-2">
+                        <i class="fa-solid fa-dumbbell text-3xl text-gray-600"></i>
+                        <p>لا توجد تمارين مضافة في القائمة بعد.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = workouts.map((w, index) => `
+                <div class="bg-brand-dark/60 border border-brand-border hover:border-brand-gold/40 rounded-2xl p-4 transition flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
+                    <div class="flex items-start gap-3">
+                        <span class="w-7 h-7 rounded-lg bg-brand-gold/10 border border-brand-gold/30 text-brand-gold text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                            ${index + 1}
+                        </span>
+                        <div>
+                            <h4 class="font-bold text-white text-base group-hover:text-brand-gold transition">${w.name}</h4>
+                            ${w.notes ? `<p class="text-xs text-gray-400 mt-1"><i class="fa-regular fa-comment-dots text-brand-gold ml-1"></i>${w.notes}</p>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between sm:justify-end gap-4 border-t sm:border-t-0 border-brand-border/40 pt-3 sm:pt-0">
+                        <div class="flex items-center gap-3 text-xs">
+                            <span class="bg-brand-card px-2.5 py-1.5 rounded-lg border border-brand-border text-gray-300">
+                                <strong class="text-brand-gold">${w.sets}</strong> مجاميع
+                            </span>
+                            <span class="bg-brand-card px-2.5 py-1.5 rounded-lg border border-brand-border text-gray-300">
+                                <strong class="text-brand-gold">${w.reps}</strong> تكرار
+                            </span>
+                            <span class="bg-brand-card px-2.5 py-1.5 rounded-lg border border-brand-border text-gray-300">
+                                <strong class="text-brand-gold">${w.rest}s</strong> راحة
+                            </span>
+                        </div>
+                        
+                        <button onclick="deleteWorkout(${w.id})" class="text-gray-500 hover:text-brand-red p-1 transition no-print" title="حذف التمرين">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Add Workout Handler
+        function handleAddWorkout(e) {
+            e.preventDefault();
+            const name = document.getElementById('workout-name').value.trim();
+            const sets = document.getElementById('workout-sets').value;
+            const reps = document.getElementById('workout-reps').value;
+            const rest = document.getElementById('workout-rest').value;
+            const notes = document.getElementById('workout-notes').value.trim();
+
+            if (!name) return;
+
+            const newWorkout = {
+                id: Date.now(),
+                name,
+                sets,
+                reps,
+                rest,
+                notes
+            };
+
+            workouts.push(newWorkout);
+            renderWorkouts();
+
+            // Reset Form
+            document.getElementById('workout-name').value = '';
+            document.getElementById('workout-notes').value = '';
+        }
+
+        // Delete Workout
+        function deleteWorkout(id) {
+            workouts = workouts.filter(w => w.id !== id);
+            renderWorkouts();
+        }
+
+        // Export as Image (PNG) - Improved for iOS Safari & High Resolution
+        async function exportAsImage() {
+            const captureArea = document.getElementById('capture-area');
+            
+            try {
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2,
+                    backgroundColor: '#121216',
+                    useCORS: true,
+                    logging: false
+                });
+
+                const image = canvas.toDataURL("image/png");
+                const link = document.createElement('a');
+                link.download = `CAP-Program-${document.getElementById('input-client-name').value || 'Client'}.png`;
+                link.href = image;
+                link.click();
+            } catch (err) {
+                alert('حدث خطأ أثناء حفظ الصورة، يرجى إعادة المحاولة.');
+                console.error(err);
+            }
+        }
+
+        // Export as PDF
+        async function exportAsPDF() {
+            const { jsPDF } = window.jspdf;
+            const captureArea = document.getElementById('capture-area');
+
+            try {
+                const canvas = await html2canvas(captureArea, {
+                    scale: 2,
+                    backgroundColor: '#121216',
+                    useCORS: true,
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210;
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                pdf.save(`CAP-Program-${document.getElementById('input-client-name').value || 'Client'}.pdf`);
+            } catch (err) {
+                alert('حدث خطأ أثناء تصدير ملف PDF، يرجى إعادة المحاولة.');
+                console.error(err);
+            }
+        }
+
+        // Initial Execution
+        updateClientData();
+        renderWorkouts();
+    </script>
+</body>
+</html>
